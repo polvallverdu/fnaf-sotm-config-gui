@@ -7,6 +7,8 @@ export interface FileResult {
   loaded: boolean;
   total_time_played: number;
   is_new_game_plus: boolean;
+  collected_text_logs: any;
+  collected_inventory_items: any;
 }
 
 export function useFileProcessor() {

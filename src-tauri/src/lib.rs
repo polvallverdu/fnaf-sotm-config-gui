@@ -1,4 +1,4 @@
-use gvas::{game_version::GameVersion, GvasFile};
+use gvas::{game_version::GameVersion, properties::Property, GvasFile};
 use serde::Serialize;
 use std::fs::File;
 
@@ -13,6 +13,8 @@ struct FileResult {
     loaded: bool,
     total_time_played: f32,
     is_new_game_plus: bool,
+    collected_text_logs: Vec<Property>,
+    collected_inventory_items: Vec<Property>,
 }
 
 #[tauri::command]
@@ -47,10 +49,15 @@ fn process_file(file_path: String) -> Result<FileResult, String> {
         .unwrap()
         .value;
 
+    let collected_text_logs = game_state.get("CollectedTextLogs").unwrap();
+    let collected_inventory_items = game_state.get("CollectedInventoryItems").unwrap();
+
     Ok(FileResult {
         loaded: true,
         total_time_played: total_time_played.into(),
         is_new_game_plus,
+        collected_text_logs: collected_text_logs.clone(),
+        collected_inventory_items: collected_inventory_items.clone(),
     })
 }
 

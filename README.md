@@ -2,6 +2,8 @@
 
 This is a GUI for the save file of FNAF: Secret of the Mimic game. It allows you to process your save file and see your progress.
 
+![Screenshot](./imgs/app.png)
+
 ## Features
 
 - Process your save file and see your progress

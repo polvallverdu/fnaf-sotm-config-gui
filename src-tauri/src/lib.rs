@@ -25,39 +25,50 @@ fn process_file(file_path: String) -> Result<FileResult, String> {
     let total_time_played = gvas_file
         .properties
         .get("TotalTimePlayed")
-        .unwrap()
-        .get_f32()
-        .unwrap()
-        .value;
+        .and_then(|p| p.get_f32())
+        .map(|f| f.value)
+        .unwrap_or(0.0.into());
 
-    let game_state = gvas_file
+    let game_state_opt = gvas_file
         .properties
         .get("GameState")
-        .unwrap()
-        .get_struct()
-        .unwrap()
-        .value
-        .get_custom_struct()
-        .unwrap();
+        .and_then(|p| p.get_struct())
+        .and_then(|s| s.value.get_custom_struct());
 
-    let is_new_game_plus = game_state
-        .get("bIsNewGamePlus")
-        .unwrap()
-        .first()
-        .unwrap()
-        .get_bool()
-        .unwrap()
-        .value;
+    let (is_new_game_plus, collected_text_logs, collected_inventory_items) =
+        if let Some(game_state) = game_state_opt {
+            let is_new_game_plus = game_state
+                .get("bIsNewGamePlus")
+                .and_then(|v| v.first())
+                .and_then(|p| p.get_bool())
+                .map(|b| b.value)
+                .unwrap_or(false);
 
-    let collected_text_logs = game_state.get("CollectedTextLogs").unwrap();
-    let collected_inventory_items = game_state.get("CollectedInventoryItems").unwrap();
+            let collected_text_logs = game_state
+                .get("CollectedTextLogs")
+                .cloned()
+                .unwrap_or_else(Vec::new);
+
+            let collected_inventory_items = game_state
+                .get("CollectedInventoryItems")
+                .cloned()
+                .unwrap_or_else(Vec::new);
+
+            (
+                is_new_game_plus,
+                collected_text_logs,
+                collected_inventory_items,
+            )
+        } else {
+            (false, Vec::new(), Vec::new())
+        };
 
     Ok(FileResult {
         loaded: true,
         total_time_played: total_time_played.into(),
         is_new_game_plus,
-        collected_text_logs: collected_text_logs.clone(),
-        collected_inventory_items: collected_inventory_items.clone(),
+        collected_text_logs,
+        collected_inventory_items,
     })
 }
 
